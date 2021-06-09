@@ -76,11 +76,13 @@ tasks:
     next:
       - when: <% succeeded() and result().result.admin_mail = '' %>
         publish:
-          - msg: "Report not sent: empty admin_mail received from DB"
-          - ack_comment: "Report not sent: empty admin_mail received from DB"
+          - msg: "Report not sent: empty admin_mail"
+          - ack_comment: "Report not sent: empty admin_mail"
+          - exit_code: "REPORT_NOT_SENT_ERROR_EMPTY_ADMIN_MAIL"
         do:
           - notification
           - acknowledge_alert
+          - set_exit_code
       - when: <% succeeded() and not result().result.admin_mail = '' %>
         publish:
           - admin_info: <% result().result %>
