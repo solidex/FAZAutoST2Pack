@@ -1,0 +1,77 @@
+version: 1.0
+
+description: Master worflow that starts Alerter in a loop
+
+input:
+  - adom
+  - alert_handler_name
+  - event_handler_period
+  - max_alert_age
+  - report_id
+
+vars:
+  - max_loops: 10
+  - exit_code: ""
+  - loop_count: 0
+  - err_loop_count: 0
+
+tasks:
+  start:
+    action: core.echo message="Started"
+    next:
+      - when: <% succeeded() %>
+        do: alerter_subworkflow
+
+  alerter_subworkflow:
+    action: fazautost2pack.alerter \
+        adom=<% ctx().adom %> \
+        alert_handler_name=<% ctx().alert_handler_name %> \
+        event_handler_period=<% ctx().event_handler_period %> \
+        max_alert_age=<% ctx().max_alert_age %> \
+        report_id=<% ctx().report_id %>
+    next:
+      - when: <% succeeded() %>
+        do: get_exit_code
+
+  get_exit_code:
+    action: st2.kv.get key="exit_code"
+
+    next:
+      - when: <% succeeded() %>
+        publish:
+          - exit_code: <% result().result %>
+        do: loop_controller
+
+  loop_controller:
+    action: core.noop
+    next:
+    - when: <% ctx().exit_code = 'NO_ALERTS_TO_PROCESS' %>
+      publish:
+        - loop_count: <% ctx().loop_count + 1 %>
+      do:
+        - finish
+        - dump_stats
+    - when: <% not ctx().exit_code = 'NO_ALERTS_TO_PROCESS' and ctx().loop_count <= ctx().max_loops %>
+      publish:
+        - loop_count: <% ctx().loop_count + 1 %>
+        - exit_code: ""
+      do:
+        - alerter_subworkflow
+    - when: <% not ctx().exit_code = 'NO_ALERTS_TO_PROCESS' and not ctx().exit_code = 'REPORT_GENERATED' %>
+      publish:
+        - err_loop_count: <% ctx().err_loop_count + 1 %>
+      do:
+        - alerter_subworkflow
+    - when: <% ctx().loop_count > ctx().max_loops %>
+      publish:
+        - loop_count: <% ctx().loop_count + 1 %>
+        - exit_code: ""
+      do:
+        - alerter_subworkflow
+        - dump_stats
+
+  finish:
+    action: "core.echo message='Completed, loops made: <% ctx().loop_count %>'"
+
+  dump_stats:
+    action: "fazautost2pack.dump_stats stats_str='loop_count=<% ctx().loop_count %>,err_loop_count=<% ctx().err_loop_count %>'"

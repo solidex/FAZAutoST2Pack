@@ -1,0 +1,51 @@
+---
+  faz_ip:
+    description: "FAZ IP address"
+    type: "string"
+    required: true
+  username:
+    description: "Username"
+    type: "string"
+    required: true
+  password:
+    description: "Password"
+    type: "string"
+    required: true
+    secret: true
+  server_name:
+    description: "SMTP server profile name configured in FMG, FAZ"
+    type: "string"
+    required: true
+  email_from_address:
+    description: "Email from"
+    type: "string"
+    required: true
+  email_subject:
+    description: "Email subject"
+    type: "string"
+    required: true
+    default: "Subscriber Notification"
+  output_format:
+    description: "Report output format, comma-separated values"
+    type: "string"
+    required: true
+    default: "csv"
+  db_ip:
+    description: "Subscriber DB IP address"
+    type: "string"
+    required: true
+  db_username:
+    description: "Subscriber db username"
+    type: "string"
+    required: true
+    default: "user"
+  db_password:
+    description: "Subscriber db password"
+    type: "string"
+    required: true
+    secret: true
+  db_connect_str:
+    description: "Subscriber db connection string"
+    type: "string"
+    required: true
+    default: ""

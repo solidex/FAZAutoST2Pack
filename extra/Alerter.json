@@ -1,0 +1,114 @@
+{
+  "dvm_os_type": 0,
+  "logdev_type": 0,
+  "version": "6.2.7",
+  "data": [
+    {
+      "address-filter": null,
+      "creation-time": 1620898252,
+      "description": "Event handler that is triggered by a filtering event",
+      "device": [
+        {
+          "id": 1,
+          "name": "All_FortiGate",
+          "type": 2,
+          "vdom": null
+        }
+      ],
+      "device-specify": 0,
+      "email-from": "",
+      "email-html-format": 0,
+      "email-subject": "",
+      "email-to": "",
+      "enable": 1,
+      "enable-time": 0,
+      "fabric-connector": null,
+      "filter": [
+        {
+          "dev-type": 0,
+          "enable": 1,
+          "eventstatus": "",
+          "eventtype": "",
+          "extrainfo": "",
+          "extrainfo-type": 0,
+          "filter-expr": "",
+          "groupby1": "endpoint",
+          "groupby2": "",
+          "id": 1,
+          "logtype": "virus",
+          "rule": null,
+          "rule-relation": 1,
+          "severity": 2,
+          "subject": "",
+          "tag": "",
+          "thres-count": 1,
+          "thres-duration": 25,
+          "utmevent": "",
+          "filtercksum": -1261523491
+        },
+        {
+          "dev-type": 0,
+          "enable": 1,
+          "eventstatus": "",
+          "eventtype": "",
+          "extrainfo": "",
+          "extrainfo-type": 0,
+          "filter-expr": "",
+          "groupby1": "endpoint",
+          "groupby2": "",
+          "id": 2,
+          "logtype": "webfilter",
+          "rule": [
+            {
+              "id": 1,
+              "key": "action",
+              "oper": 0,
+              "value": "blocked",
+              "value-type": 0
+            }
+          ],
+          "rule-relation": 1,
+          "severity": 2,
+          "subject": "",
+          "tag": "",
+          "thres-count": 1,
+          "thres-duration": 25,
+          "utmevent": "",
+          "filtercksum": 326567999
+        },
+        {
+          "dev-type": 0,
+          "enable": 1,
+          "eventstatus": "",
+          "eventtype": "",
+          "extrainfo": "",
+          "extrainfo-type": 0,
+          "filter-expr": "",
+          "groupby1": "endpoint",
+          "groupby2": "",
+          "id": 3,
+          "logtype": "ips",
+          "rule": null,
+          "rule-relation": 1,
+          "severity": 2,
+          "subject": "",
+          "tag": "",
+          "thres-count": 1,
+          "thres-duration": 25,
+          "utmevent": "",
+          "filtercksum": -841890033
+        }
+      ],
+      "filter-relation": 1,
+      "handlertype": 0,
+      "id": 3,
+      "name": "Alerter",
+      "protected": 0,
+      "target-enable": 0,
+      "template-url": "",
+      "update-time": 1622816721,
+      "uuid": "",
+      "version": 2
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+---
+name: "get_admin_by_id"
+runner_type: "python-script"
+description: "Get admin data by ID that can be MSISDN, PPPoE username, MAC addres"
+enabled: true
+entry_point: "get_admin_by_id.py"
+parameters:
+    user_id:
+        type: "string"
+        description: "MSISDN/PPPoE username/MAC address"
+        required: true
+        position: 1

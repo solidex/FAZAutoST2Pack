@@ -1,0 +1,42 @@
+---
+name: "run_report"
+runner_type: "python-script"
+description: "Run report at FAZ. Report data will be filtered based on the user \
+  identified by `euname` found in the first `alert`"
+enabled: true
+entry_point: "run_report.py"
+parameters:
+    adom:
+        type: "string"
+        description: "ADOM"
+        required: false
+        default: "root"
+        position: 1
+    email_to_address:
+        type: "string"
+        description: "Email to"
+        required: true
+        position: 2
+    alerts:
+        type: "string"
+        description: "String, array of alerts"
+        default: "{{ st2kv('system.alerts') }}"
+        required: true
+        position: 3
+    report_id:
+        type: "integer"
+        description: "Report ID"
+        required: true
+        position: 4
+    ack:
+        type: "boolean"
+        description: "Enable alert acknowledgement"
+        required: true
+        default: false
+        position: 5
+    comment:
+        type: "boolean"
+        description: "Enable adding alert comment"
+        required: true
+        default: false
+        position: 6

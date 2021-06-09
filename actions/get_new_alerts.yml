@@ -1,0 +1,44 @@
+---
+name: "get_new_alerts"
+runner_type: "python-script"
+description: "Get new alerts from FAZ"
+enabled: true
+entry_point: "get_new_alerts.py"
+parameters:
+    adom:
+        type: "string"
+        description: "ADOM"
+        required: false
+        default: "root"
+        position: 1
+    alert_handler_name:
+        type: "string"
+        description: "Alert handler name"
+        required: true
+        position: 2
+    event_handler_period:
+        type: "string"
+        description: "Event collection period.
+            Should exceed (+5 minutes) Event Handler `period` value to catch 'finished' alerts."
+        default: "30m"
+        required: true
+        position: 3
+    max_alert_age:
+        type: "string"
+        description: "Max age of the event"
+        default: "8h"
+        required: true
+        position: 4
+    limit:
+        type: "integer"
+        description: "Max alerts to return"
+        default: 1000
+        required: true
+        position: 5
+    euname:
+        type: "string"
+        description: "Filter alerts by username (empty to disable filtering)"
+        default: ""
+        required: false
+        position: 6
+

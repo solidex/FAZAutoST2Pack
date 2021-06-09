@@ -1,0 +1,25 @@
+---
+name: "ack_alert"
+runner_type: "python-script"
+description: "Acknowledge alert. Add alert comment"
+enabled: true
+entry_point: "ack_alert.py"
+parameters:
+    adom:
+        type: "string"
+        description: "ADOM"
+        required: false
+        default: "root"
+        position: 1
+    alerts:
+        type: "string"
+        description: "String, array of alerts"
+        default: "{{ st2kv('system.alerts') }}"
+        required: true
+        position: 2
+    comment:
+        type: "string"
+        description: "Comment"
+        default: ""
+        required: false
+        position: 3

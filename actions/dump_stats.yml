@@ -1,0 +1,13 @@
+---
+name: "dump_stats"
+runner_type: "python-script"
+description: "Dump run statistics to be used by others (SNMP agent)"
+enabled: true
+entry_point: "dump_stats.py"
+parameters:
+    stats_str:
+        type: "string"
+        description: "k1=v1,k2=v2"
+        required: true
+        default: "{}"
+        position: 1

@@ -1,0 +1,37 @@
+---
+name: alerter
+pack: fazautost2pack
+description: A basic sequential workflow.
+runner_type: orquesta
+entry_point: workflows/alerter.yml
+enabled: true
+parameters:
+    adom:
+        type: "string"
+        description: "ADOM"
+        required: false
+        default: "root"
+        position: 1
+    alert_handler_name:
+        type: "string"
+        description: "Alert handler name"
+        required: true
+        position: 2
+    event_handler_period:
+        type: "string"
+        description: "Event collection period specified in Event Handler. \
+            Should match Event Handler `period` value to catch 'finished' alerts"
+        default: "30m"
+        required: true
+        position: 3
+    max_alert_age:
+        type: "string"
+        description: "Max age of the event"
+        default: "8h"
+        required: true
+        position: 4
+    report_id:
+        type: "integer"
+        description: "Report ID"
+        required: true
+        position: 5
