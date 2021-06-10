@@ -13,13 +13,17 @@ vars:
   - max_loops: 10
   - exit_code: ""
   - loop_count: 0
+  - warn_loop_count: 0
   - err_loop_count: 0
+  - report_generated_count: 0
 
 tasks:
   start:
     action: core.echo message="Started"
     next:
       - when: <% succeeded() %>
+        publish:
+          - exit_code: ""
         do: alerter_subworkflow
 
   alerter_subworkflow:
@@ -40,38 +44,62 @@ tasks:
       - when: <% succeeded() %>
         publish:
           - exit_code: <% result().result %>
-        do: loop_controller
+        do: build_stats
 
-  loop_controller:
+  build_stats:
     action: core.noop
     next:
     - when: <% ctx().exit_code = 'NO_ALERTS_TO_PROCESS' %>
       publish:
         - loop_count: <% ctx().loop_count + 1 %>
       do:
-        - finish
-        - dump_stats
-    - when: <% not ctx().exit_code = 'NO_ALERTS_TO_PROCESS' and ctx().loop_count <= ctx().max_loops %>
+        - loop_controller
+    - when: <% ctx().exit_code = 'REPORT_GENERATED' %>
       publish:
         - loop_count: <% ctx().loop_count + 1 %>
-        - exit_code: ""
+        - report_generated_count: <% ctx().report_generated_count + 1 %>
       do:
-        - alerter_subworkflow
-    - when: <% not ctx().exit_code = 'NO_ALERTS_TO_PROCESS' and not ctx().exit_code = 'REPORT_GENERATED' %>
+        - loop_controller
+    - when: <%  ctx().exit_code = 'WARN_REPORT_NOT_SENT_USERID_EMPTY' or
+                ctx().exit_code = 'WARN_REPORT_NOT_SENT_EMPTY_ADMIN_MAIL'
+              %>
       publish:
+        - loop_count: <% ctx().loop_count + 1 %>
+        - warn_loop_count: <% ctx().warn_loop_count + 1 %>
+      do:
+        - loop_controller
+    - when: <%
+                ctx().exit_code = 'ERR_REPORT_NOT_SENT_ERROR_GENERATING_REPORT' or
+                ctx().exit_code = 'N/A'
+            %>
+      publish:
+        - loop_count: <% ctx().loop_count + 1 %>
         - err_loop_count: <% ctx().err_loop_count + 1 %>
       do:
-        - alerter_subworkflow
-    - when: <% ctx().loop_count > ctx().max_loops %>
-      publish:
-        - loop_count: <% ctx().loop_count + 1 %>
-        - exit_code: ""
+        - loop_controller
+
+  loop_controller:
+    action: core.noop
+    next:
+    - when: <% ctx().exit_code = 'NO_ALERTS_TO_PROCESS' or
+               ctx().loop_count > ctx().max_loops  %>
+      do:
+        - write_stats
+    - when: <% not (
+               ctx().exit_code = 'NO_ALERTS_TO_PROCESS' or
+               ctx().loop_count > ctx().max_loops
+            )  %>
       do:
         - alerter_subworkflow
-        - dump_stats
+
+  write_stats:
+    action: "fazautost2pack.dump_stats stats_str='loop_count=<% ctx().loop_count %>,err_loop_count=<% ctx().err_loop_count %>,warn_loop_count=<% ctx().warn_loop_count %>,report_generated_count=<% ctx().report_generated_count %>'"
+    next:
+      - when: <% succeeded() %>
+        do:
+          - finish
 
   finish:
-    action: "core.echo message='Completed, loops made: <% ctx().loop_count %>'"
-
-  dump_stats:
-    action: "fazautost2pack.dump_stats stats_str='loop_count=<% ctx().loop_count %>,err_loop_count=<% ctx().err_loop_count %>'"
+    action: "core.echo message='Completed, loops made: <% ctx().loop_count %>,
+      reports generated: <% ctx().report_generated_count %>,
+      warnings: <% ctx().warn_loop_count %>, errors: <% ctx().err_loop_count %>'"

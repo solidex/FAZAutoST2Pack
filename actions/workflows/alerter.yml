@@ -10,7 +10,7 @@ input:
   - report_id
 
 vars:
-  - exit_code: ""
+  - exit_code: "N/A"
 
 tasks:
   task1_get_random_alert:
@@ -42,7 +42,7 @@ tasks:
         publish:
           - msg: "User ID is empty. Can not send report without user ID"
           - ack_comment: "Report not sent: USER ID empty"
-          - exit_code: "REPORT_NOT_SENT_USERID_EMPTY"
+          - exit_code: "WARN_REPORT_NOT_SENT_USERID_EMPTY"
         do:
           - notification
           - acknowledge_alert
@@ -78,7 +78,7 @@ tasks:
         publish:
           - msg: "Report not sent: empty admin_mail"
           - ack_comment: "Report not sent: empty admin_mail"
-          - exit_code: "REPORT_NOT_SENT_ERROR_EMPTY_ADMIN_MAIL"
+          - exit_code: "WARN_REPORT_NOT_SENT_EMPTY_ADMIN_MAIL"
         do:
           - notification
           - acknowledge_alert
@@ -108,7 +108,7 @@ tasks:
       - when: <% failed() %>
         publish:
           - msg: "Report not sent: error generating report"
-          - exit_code: "REPORT_NOT_SENT_ERROR_GENERATING_REPORT"
+          - exit_code: "ERR_REPORT_NOT_SENT_ERROR_GENERATING_REPORT"
         do:
           - notification
           - set_exit_code
