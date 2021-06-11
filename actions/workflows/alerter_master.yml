@@ -10,7 +10,7 @@ input:
   - report_id
 
 vars:
-  - max_loops: 10
+  - max_loops: 49
   - exit_code: ""
   - loop_count: 0
   - warn_loop_count: 0
