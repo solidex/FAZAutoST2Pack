@@ -10,96 +10,64 @@ input:
   - report_id
 
 vars:
-  - max_loops: 49
-  - exit_code: ""
-  - loop_count: 0
-  - warn_loop_count: 0
-  - err_loop_count: 0
-  - report_generated_count: 0
+  - concurrency: 3
 
 tasks:
   start:
     action: core.echo message="Started"
     next:
       - when: <% succeeded() %>
+        do: check_if_another_master_is_running
+
+  check_if_another_master_is_running:
+    action: st2.executions.list action="fazautost2pack.alerter_master" status="running"
+    next:
+      - when: <% succeeded() and result().result.len() <= 1 %>
+        do: get_new_alerts
+      - when: <% succeeded() and result().result.len() > 1 %>
+        do: already_running
+
+  get_new_alerts:
+    action: fazautost2pack.get_new_alerts \
+      adom=<% ctx().adom %> \
+      alert_handler_name=<% ctx().alert_handler_name %> \
+      event_handler_period=<% ctx().event_handler_period %> \
+      max_alert_age=<% ctx().max_alert_age %> \
+      euname='' \
+      limit=1000
+    next:
+      - when: <% succeeded() %>
         publish:
-          - exit_code: ""
+          - alerts: "{{ result().result.data | list }}"
         do: alerter_subworkflow
 
   alerter_subworkflow:
+    with:
+      items: <% ctx(alerts).select($.euname).distinct() %> # selecting user IDs
+      concurrency: <% ctx(concurrency) %>
     action: fazautost2pack.alerter \
         adom=<% ctx().adom %> \
-        alert_handler_name=<% ctx().alert_handler_name %> \
-        event_handler_period=<% ctx().event_handler_period %> \
-        max_alert_age=<% ctx().max_alert_age %> \
+        user_id=<% item() %> \
         report_id=<% ctx().report_id %>
     next:
       - when: <% succeeded() %>
-        do: get_exit_code
+        do: write_stats
 
-  get_exit_code:
-    action: st2.kv.get key="exit_code"
-
+  write_stats:
+    action: "fazautost2pack.dump_stats stats_str='<% str(task(alerter_subworkflow).result.items) %>'"
     next:
       - when: <% succeeded() %>
         publish:
-          - exit_code: <% result().result %>
-        do: build_stats
+          - stats: <% result().result %>
+        do: clean_cache
 
-  build_stats:
-    action: core.noop
+  clean_cache:
+    action: st2.kv.delete key="cached_alerts"
     next:
-    - when: <% ctx().exit_code = 'NO_ALERTS_TO_PROCESS' %>
-      publish:
-        - loop_count: <% ctx().loop_count + 1 %>
-      do:
-        - loop_controller
-    - when: <% ctx().exit_code = 'REPORT_GENERATED' %>
-      publish:
-        - loop_count: <% ctx().loop_count + 1 %>
-        - report_generated_count: <% ctx().report_generated_count + 1 %>
-      do:
-        - loop_controller
-    - when: <%  ctx().exit_code = 'WARN_REPORT_NOT_SENT_USERID_EMPTY' or
-                ctx().exit_code = 'WARN_REPORT_NOT_SENT_EMPTY_ADMIN_MAIL'
-              %>
-      publish:
-        - loop_count: <% ctx().loop_count + 1 %>
-        - warn_loop_count: <% ctx().warn_loop_count + 1 %>
-      do:
-        - loop_controller
-    - when: <%
-                ctx().exit_code = 'ERR_REPORT_NOT_SENT_ERROR_GENERATING_REPORT' or
-                ctx().exit_code = 'N/A'
-            %>
-      publish:
-        - loop_count: <% ctx().loop_count + 1 %>
-        - err_loop_count: <% ctx().err_loop_count + 1 %>
-      do:
-        - loop_controller
-
-  loop_controller:
-    action: core.noop
-    next:
-    - when: <% ctx().exit_code = 'NO_ALERTS_TO_PROCESS' or
-               ctx().loop_count > ctx().max_loops  %>
-      do:
-        - write_stats
-    - when: <% not (
-               ctx().exit_code = 'NO_ALERTS_TO_PROCESS' or
-               ctx().loop_count > ctx().max_loops
-            )  %>
-      do:
-        - alerter_subworkflow
-
-  write_stats:
-    action: "fazautost2pack.dump_stats stats_str='loop_count=<% ctx().loop_count %>,err_loop_count=<% ctx().err_loop_count %>,warn_loop_count=<% ctx().warn_loop_count %>,report_generated_count=<% ctx().report_generated_count %>'"
-    next:
-      - when: <% succeeded() %>
-        do:
-          - finish
+      - do: finish
 
   finish:
-    action: "core.echo message='Completed, loops made: <% ctx().loop_count %>,
-      reports generated: <% ctx().report_generated_count %>,
-      warnings: <% ctx().warn_loop_count %>, errors: <% ctx().err_loop_count %>'"
+    action: "core.echo message='Completed! Stats: <% ctx().stats %>'"
+
+  already_running:
+      action: "core.echo message='Exit, another alerter_master is already running'"

@@ -19,24 +19,29 @@ parameters:
         position: 2
     alerts:
         type: "string"
-        description: "String, array of alerts"
-        default: "{{ st2kv('system.alerts') }}"
+        description: "String, array of alerts. Alerts that do not match `user_id` will be dropped"
+        default: ""
         required: true
         position: 3
+    user_id:
+        type: "string"
+        description: "Report is gerated for this `user_id`"
+        required: true
+        position: 4
     report_id:
         type: "integer"
         description: "Report ID"
         required: true
-        position: 4
+        position: 5
     ack:
         type: "boolean"
         description: "Enable alert acknowledgement"
         required: true
         default: false
-        position: 5
+        position: 6
     comment:
         type: "boolean"
         description: "Enable adding alert comment"
         required: true
         default: false
-        position: 6
+        position: 7

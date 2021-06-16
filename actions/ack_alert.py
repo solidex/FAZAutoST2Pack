@@ -16,7 +16,7 @@ timezone = pytz.timezone("Europe/Minsk")
 
 class AckAlert(Action):
 
-    def run(self, adom, alerts, comment):
+    def run(self, adom, user_id, alerts, comment):
 
         apiw = FAZAPIWrapper()
         login_res = apiw.login(self.config['faz_ip'], self.config['username'], self.config['password'])
@@ -28,6 +28,16 @@ class AckAlert(Action):
         if login_res[0]['status']['code'] == 0:
 
             alerts = json.loads(alerts)
+
+            if len(alerts) == 0:
+                return(False, '`alerts` parameter is emply!')
+
+            filtered_alerts = []
+            for alert in alerts:
+                if alert['euname'] == user_id:
+                    filtered_alerts.append(alert)
+
+            alerts = filtered_alerts
 
             if len(alerts) > 0:
 
@@ -43,5 +53,7 @@ class AckAlert(Action):
 
                 apiw.logout()
                 return(True, "Ack: ok!")
-
+            else:
+                return(False, 'Alert list doesn\'t have any alerts for `%s`' % user_id)
+                
         return (False, "Log in failed, %s" % login_res)

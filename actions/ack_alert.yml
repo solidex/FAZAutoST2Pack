@@ -13,13 +13,18 @@ parameters:
         position: 1
     alerts:
         type: "string"
-        description: "String, array of alerts"
-        default: "{{ st2kv('system.alerts') }}"
+        description: "String, array of alerts. Alerts that do not match `user_id` will be dropped"
+        default: ""
         required: true
         position: 2
+    user_id:
+        type: "string"
+        description: "Report is gerated for this `user_id`"
+        required: true
+        position: 3
     comment:
         type: "string"
         description: "Comment"
         default: ""
         required: false
-        position: 3
+        position: 4

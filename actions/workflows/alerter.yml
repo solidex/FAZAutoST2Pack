@@ -4,39 +4,17 @@ description: Alerter workflow
 
 input:
   - adom
-  - alert_handler_name
-  - event_handler_period
-  - max_alert_age
+  - alerts
+  - user_id
   - report_id
 
 vars:
   - exit_code: "N/A"
 
 tasks:
-  task1_get_random_alert:
-    action: fazautost2pack.get_new_alerts \
-      adom=<% ctx().adom %> \
-      alert_handler_name=<% ctx().alert_handler_name %> \
-      event_handler_period=<% ctx().event_handler_period %> \
-      max_alert_age=<% ctx().max_alert_age %> \
-      limit=1
-    next:
-      - when: <% succeeded() and len(result().result.data) > 0 %>
-        publish:
-          - alerts: <% result().result.data %>
-          - user_id: <% result().result.data[0]['euname'] %>
-          - user_ip: <% result().result.data[0]['epip'] %>
-        do: task2_check_user
-      - when: <% succeeded() and len(result().result.data) = 0 %>
-        publish:
-          - msg: "No alerts to process"
-          - exit_code: "NO_ALERTS_TO_PROCESS"
-        do:
-          - notification
-          - set_exit_code
 
-  task2_check_user:
-    action: core.echo message="Checking <% ctx().user_ip %> user_id...<% ctx().user_id %>"
+  step1_check_user:
+    action: core.echo message="Checking user_id <% ctx().user_id %>..."
     next:
       - when: <% ctx().user_id in [ 'N/A', 'n/a', '' ] %>
         publish:
@@ -46,31 +24,10 @@ tasks:
         do:
           - notification
           - acknowledge_alert
-          - set_exit_code
       - when: <% not ctx().user_id in [ 'N/A', 'n/a', '' ] %>
-        do: task3_get_all_alerts_for_user
+        do: step2_get_admin_info_by_id
 
-  task3_get_all_alerts_for_user:
-    action: fazautost2pack.get_new_alerts \
-      adom=<% ctx().adom %> \
-      alert_handler_name=<% ctx().alert_handler_name %> \
-      event_handler_period=<% ctx().event_handler_period %> \
-      max_alert_age=<% ctx().max_alert_age %> \
-      euname=<% ctx().user_id %> \
-      limit=1000
-    next:
-      - when: <% succeeded() and len(result().result.data) > 0 %>
-        publish:
-          - alerts: <% result().result.data %>
-        do: task4_get_admin_info_by_id
-      - when: <% succeeded() and len(result().result.data) = 0 %>
-        publish:
-          - msg: "No alerts to process. That's unexpected!"
-        do:
-          - notification
-          - fail
-
-  task4_get_admin_info_by_id:
+  step2_get_admin_info_by_id:
     action: fazautost2pack.get_admin_by_id \
        user_id='<% ctx().user_id %>'
     next:
@@ -82,17 +39,17 @@ tasks:
         do:
           - notification
           - acknowledge_alert
-          - set_exit_code
       - when: <% succeeded() and not result().result.admin_mail = '' %>
         publish:
           - admin_info: <% result().result %>
-        do: task5_run_report
+        do: step3_run_report
 
-  task5_run_report:
+  step3_run_report:
     action: fazautost2pack.run_report \
       adom=<% ctx().adom %> \
       email_to_address=<% ctx().admin_info.admin_mail %> \
-      alerts="" \
+      alerts=<% ctx().alerts %> \
+      user_id=<% ctx().user_id %> \
       report_id=<% ctx().report_id %> \
       ack=false comment=false
     next:
@@ -104,24 +61,23 @@ tasks:
         do:
           - notification
           - acknowledge_alert
-          - set_exit_code
       - when: <% failed() %>
         publish:
           - msg: "Report not sent: error generating report"
           - exit_code: "ERR_REPORT_NOT_SENT_ERROR_GENERATING_REPORT"
         do:
           - notification
-          - set_exit_code
           - fail
 
   acknowledge_alert:
     action: fazautost2pack.ack_alert \
       adom=<% ctx().adom %> \
+      user_id=<% ctx().user_id %> \
       alerts='' \
       comment=<% ctx().ack_comment %>
 
   notification:
     action: core.echo message="<% ctx().msg %>"
 
-  set_exit_code:
-    action: st2.kv.set key="exit_code" value="<% ctx().exit_code %>"
+output:
+  - result: <% ctx().exit_code %>

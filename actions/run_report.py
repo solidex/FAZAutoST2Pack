@@ -16,7 +16,7 @@ timezone = pytz.timezone("Europe/Minsk")
 
 class RunReport(Action):
 
-    def run(self, adom, email_to_address, report_id, alerts, ack, comment):
+    def run(self, adom, email_to_address, report_id, user_id, alerts, ack, comment):
 
         apiw = FAZAPIWrapper()
         login_res = apiw.login(self.config['faz_ip'], self.config['username'], self.config['password'])
@@ -29,9 +29,19 @@ class RunReport(Action):
 
         if login_res[0]['status']['code'] == 0:
             alerts = json.loads(alerts)
+            if len(alerts) == 0:
+                return(False, '`alerts` parameter is emply!')
+
+            filtered_alerts = []
+            for alert in alerts:
+                if alert['euname'] == user_id:
+                    filtered_alerts.append(alert)
+
+            alerts = filtered_alerts # ! working with filtered alerts
+
             if len(alerts) > 0:
 
-                euname = alerts[0]['euname']
+                euname = user_id
 
                 output_profile_name = euname.replace('.', '_')
 
@@ -80,5 +90,7 @@ class RunReport(Action):
 
                 apiw.logout()
                 return(True, comment_str)
+            else:
+                return(False, 'Alert list doesn\'t have any alerts for `%s`' % user_id)
 
         return (False, "Log in failed, %s" % login_res)

@@ -7,7 +7,6 @@ entry_point: "dump_stats.py"
 parameters:
     stats_str:
         type: "string"
-        description: "k1=v1,k2=v2"
         required: true
-        default: "{}"
+        default: "[]"
         position: 1

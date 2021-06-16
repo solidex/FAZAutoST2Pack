@@ -12,26 +12,19 @@ parameters:
         required: false
         default: "root"
         position: 1
-    alert_handler_name:
+    user_id:
         type: "string"
-        description: "Alert handler name"
+        description: "User ID"
         required: true
         position: 2
-    event_handler_period:
+    alerts:
         type: "string"
-        description: "Event collection period specified in Event Handler. \
-            Should match Event Handler `period` value to catch 'finished' alerts"
-        default: "30m"
+        description: ""
         required: true
+        default: ""
         position: 3
-    max_alert_age:
-        type: "string"
-        description: "Max age of the event"
-        default: "8h"
-        required: true
-        position: 4
     report_id:
         type: "integer"
         description: "Report ID"
         required: true
-        position: 5
+        position: 4
