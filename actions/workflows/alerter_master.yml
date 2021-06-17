@@ -10,7 +10,7 @@ input:
   - report_id
 
 vars:
-  - concurrency: 3
+  - concurrency: 5
 
 tasks:
   start:
