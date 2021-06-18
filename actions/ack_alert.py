@@ -44,7 +44,7 @@ class AckAlert(Action):
                 comment_str = ""
                 now_in_tz = datetime.datetime.now().astimezone(timezone)
                 if comment:
-                    comment_str = "%s; t: %s" % (comment, now_in_tz)
+                    comment_str = "%s; t_comment_added: %s" % (comment, now_in_tz)
 
                 for alert in alerts:
                     if comment_str:
@@ -55,5 +55,5 @@ class AckAlert(Action):
                 return(True, "Ack: ok!")
             else:
                 return(False, 'Alert list doesn\'t have any alerts for `%s`' % user_id)
-                
+
         return (False, "Log in failed, %s" % login_res)

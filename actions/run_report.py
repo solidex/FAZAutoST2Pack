@@ -81,7 +81,7 @@ class RunReport(Action):
                     time.sleep(3)
 
                 now_in_tz = datetime.datetime.now().astimezone(timezone)
-                comment_str = "report_id: %s; report_name: %s; sent_to: %s; t: %s" % (tid, report_name, email_to_address, now_in_tz)
+                comment_str = "report_id: %s; report_name: %s; sent_to: %s; t_generated: %s" % (tid, report_name, email_to_address, now_in_tz)
                 for alert in alerts:
                     if comment:
                         apiw.set_alert_comment(adom, alert['alertid'], comment_str)
