@@ -3,18 +3,27 @@ import json
 import time
 import logging
 
+import clickhouse_driver.dbapi as dbapi
+
 from st2client.client import Client
 from st2client.models import KeyValuePair
 
 DB_TTL = 600
+
+__all__ = [
+    "GetAdminDataById"
+]
+
+
 
 class GetAdminDataById():
 
     def __init__(self): 
         #
         # for testing purposes only
-        self.logger = logging.getLogger()
-
+        self.logger = logging.getLogger(__name__)
+        self.logger.addHandler(logging.StreamHandler())
+        self.logger.setLevel(logging.DEBUG)
 
     def run(self, user_id):
 
@@ -33,6 +42,14 @@ class GetAdminDataById():
             self.logger.debug('admin_info returned from cache, %s' % admin_info)
         else:
             self.logger.debug('Trying to get admin_info from DB...')
+
+            try:
+                dbapi.connect(host='172.18.0.2', user='default', password='', port=9000, database='a1')
+                self.logger.info('Successfully connected to database...')
+            except Exception as e:
+                self.logger.exception('Failed to connect to database...')
+
+            # testing purposes
             if user_id == '3752961995xx':
                 admin_info = {
                     'admin_name': 'Pavel',
@@ -57,5 +74,5 @@ if __name__ == "__main__":
     get_admin_data = GetAdminDataById()
     #
     result = get_admin_data.run(user_id="3752961995xx")
-    print(result)
+    # print(result)
     #
