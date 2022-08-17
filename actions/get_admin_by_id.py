@@ -33,6 +33,11 @@ class GetAdminDataById(Action):
         db_password = keys.get_by_name(name="database_password", scope='system', decrypt=True).value
         db_query = keys.get_by_name(name="database_query", scope='system').value.format(user_id)
         #
+        self.logger.debug('Database access parameters: {} | {} | {}'.format(
+                        db_host+":"+db_port, 
+                        db_username+":"+db_password[:2]+"*********",
+                        db_query))
+
         #
         cached_admin_info_kv = keys.get_by_name(name=user_id, scope='user')
         #
