@@ -27,14 +27,13 @@ class GetAdminDataById(Action):
             'admin_mail': ''
         }
         #
-        db_host = keys.get_by_name(name="database_ip", scope='system').value
-        db_port = keys.get_by_name(name="database_port", scope='system').value
+        db_connect_str = keys.get_by_name(name="database_connect_str", scope='system').value
         db_username = keys.get_by_name(name="database_username", scope='system').value
         db_password = keys.get_by_name(name="database_password", scope='system', decrypt=True).value
         db_query = keys.get_by_name(name="database_query", scope='system').value.format(user_id)
         #
         self.logger.debug('Database access parameters: {} | {} | {}'.format(
-                        db_host+":"+db_port, 
+                        db_connect_str, 
                         db_username+":"+db_password[:2]+"*********",
                         db_query))
 
@@ -46,7 +45,7 @@ class GetAdminDataById(Action):
             self.logger.debug('admin_info returned from cache, %s' % admin_info)
         else:
             self.logger.debug('Trying to get admin_info from DB...')
-            db_connection = dbapi.connect(host=db_host, user=db_username, password=db_password, port=db_port)
+            db_connection = dbapi.connect(dsn=db_connect_str, user=db_username, password=db_password)
             try:
                 db_cursor = db_connection.cursor()
                 db_cursor.execute(db_query)
