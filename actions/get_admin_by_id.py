@@ -44,8 +44,8 @@ class GetAdminDataById(Action):
             admin_info = json.loads(cached_admin_info_kv.value)
             self.logger.debug('admin_info returned from cache, %s' % admin_info)
         else:
-            self.logger.debug('Trying to get admin_info from DB...')
             db_connection = dbapi.connect(dsn=db_connect_str, user=db_username, password=db_password)
+            self.logger.debug('Trying to get admin_info from DB...')
             try:
                 db_cursor = db_connection.cursor()
                 db_cursor.execute(db_query)
