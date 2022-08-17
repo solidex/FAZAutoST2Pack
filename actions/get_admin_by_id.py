@@ -16,11 +16,10 @@ DB_TTL = 600
 
 
 
-class GetAdminDataById():
+class GetAdminDataById(Action):
 
     def run(self, user_id):
         keys = CustomKeyManagementHandler(base_url='http://localhost') 
-        assert user_id.isnumeric(), "user_id should contain digits only"
         #
         admin_info = {
             'admin_name': '',
