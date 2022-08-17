@@ -5,7 +5,7 @@ name = "pypi"
 
 [packages]
 pytimeparse = "*"
-oracledb = "*"
+oracledb = "==1.0.1"
 
 [dev-packages]
 clickhouse-driver = "*"
