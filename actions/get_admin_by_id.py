@@ -4,25 +4,19 @@ import json
 import time
 import logging
 
+import oracledb as dbapi
 from st2client.client import Client
 from st2client.models import KeyValuePair
-
-import oracledb as dbapi
+from st2common.runners.base_action import Action
 
 from key_management_handler import CustomKeyManagementHandler
+
 
 DB_TTL = 600
 
 
 
 class GetAdminDataById():
-
-    def __init__(self): 
-        #
-        # for testing purposes only
-        self.logger = logging.getLogger(__name__)
-        self.logger.addHandler(logging.StreamHandler())
-        self.logger.setLevel(logging.DEBUG)
 
     def run(self, user_id):
         keys = CustomKeyManagementHandler(base_url='http://localhost') 
@@ -74,12 +68,3 @@ class GetAdminDataById():
         #
         keys.update(KeyValuePair(name=user_id, value=json.dumps(admin_info), ttl=DB_TTL, scope='user'))
         return(True, admin_info)
-
-
-
-if __name__ == "__main__":
-    get_admin_data = GetAdminDataById()
-    #
-    result = get_admin_data.run(user_id="375231041263")
-    # print(result)
-    #
