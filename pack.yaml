@@ -13,7 +13,7 @@ keywords:
     - FortiAnalyzer
     - Fortinet
 # Pack version which must follow semver format (<major>.<minor>.<patch> e.g. 1.0.0)
-version: 0.0.7
+version: 0.0.8
 # A list of major Python versions pack is tested with and works with.
 python_versions:
   - "2"
@@ -31,3 +31,4 @@ email: info@solidex.by
 # Optional list of additional contributors to the pack.
 contributors:
   - "Pavel Raunou <provnov@solidex.by>"
+  - "Matvey Draevich <mdraevich@solidex.by>"

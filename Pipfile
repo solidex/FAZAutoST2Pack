@@ -5,10 +5,11 @@ name = "pypi"
 
 [packages]
 pytimeparse = "*"
-st2client = "==3.4.0"
+oracledb = "*"
 
 [dev-packages]
 clickhouse-driver = "*"
+st2client = "*"
 
 [requires]
 python_version = "3.8"

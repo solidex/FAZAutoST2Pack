@@ -6,7 +6,8 @@ import logging
 
 from st2client.client import Client
 from st2client.models import KeyValuePair
-import clickhouse_driver.dbapi as dbapi
+
+import oracledb as dbapi
 
 from key_management_handler import CustomKeyManagementHandler
 
