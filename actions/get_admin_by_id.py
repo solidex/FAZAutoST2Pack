@@ -68,3 +68,8 @@ class GetAdminDataById():
         #
         keys.update(KeyValuePair(name=user_id, value=json.dumps(admin_info), ttl=DB_TTL, scope='user'))
         return(True, admin_info)
+
+
+
+if __name__ == "__main__":
+    print(GetAdminDataById().run(user_id="3752961995xy"))
