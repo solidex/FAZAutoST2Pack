@@ -14,7 +14,7 @@ DB_TTL = 600
 
 def oracledb_thin_client(*args, logger, **kwargs):
     try:
-        logger.debug('Connecting to OracleDB using thin client...')
+        logger.debug('Connecting to OracleDB using thin client')
         db_connection = dbapi.connect(*args, **kwargs)
         return db_connection.cursor()
     except: 
@@ -24,7 +24,7 @@ def oracledb_thin_client(*args, logger, **kwargs):
 
 def oracledb_thick_client(*args, logger, **kwargs):
     try:
-        logger.debug('Connecting to OracleDB using thick client...')
+        logger.debug('Connecting to OracleDB using thick client')
         dbapi.init_oracle_client()
         db_connection = dbapi.connect(*args, **kwargs)
         return db_connection.cursor()
@@ -33,7 +33,7 @@ def oracledb_thick_client(*args, logger, **kwargs):
         return None
 
 
-def connect_to_oracledb(*args, **kwargs):
+def connect_to_oracledb(*args, use_oracle_thick_client, **kwargs):
     thick_client = False if os.environ.get("USE_THICK_CLIENT", "YES") == "NO" else True
     # thick client should be changed by environment var
     if thick_client:
@@ -55,7 +55,7 @@ class GetAdminDataById(Action):
         self.logger.debug('admin_info returned from function GetAdminDataById.run_test, %s' % admin_info)
         return admin_info
 
-    def run(self, user_id):
+    def run(self, user_id, use_oracle_thick_client):
         # Check if we're working in testing environment
         if self.config.get("is_testing", False):
             self.logger.warning("activate testing environment for the reason is_testing={}".format(
@@ -86,7 +86,13 @@ class GetAdminDataById(Action):
             #
             # connect & retrieve cursor from OracleDB
             self.logger.info('Trying to connect to database...')
-            cursor = connect_to_oracledb(dsn=db_connect_str, user=db_username, password=db_password, logger=self.logger)
+            cursor = connect_to_oracledb(
+                                        dsn=db_connect_str, 
+                                        user=db_username, 
+                                        password=db_password, 
+                                        use_oracle_thick_client=use_oracle_thick_client,
+                                        logger=self.logger
+                                        )
             if cursor is None:  # connection seems to be non-working
                 self.logger.error('Failed to connect to database!')
                 return (False, admin_info)

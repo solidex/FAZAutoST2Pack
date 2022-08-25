@@ -49,6 +49,12 @@
     type: "string"
     required: true
     default: ""
+  use_oracle_thick_client:
+    description: "if true use thick client (python-oracle-db + instant_client), if false use thin client (python-oracle-db)"
+    type: "boolean"
+    required: false
+    default: false
+
   is_testing:
     description: "Disables database interaction and returns test user information (name, phone, email)"
     type: "boolean"
