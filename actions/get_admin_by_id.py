@@ -57,9 +57,9 @@ class GetAdminDataById(Action):
 
     def run(self, user_id):
         # Check if we're working in testing environment
-        if self.config.get(is_testing, False):
+        if self.config.get("is_testing", False):
             self.logger.warning("activate testing environment for the reason is_testing={}".format(
-                                                                self.config.get(is_testing, False)))
+                                                                self.config.get("is_testing", False)))
             return self.run_test(user_id=user_id)
         #
         admin_info = {
