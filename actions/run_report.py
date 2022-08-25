@@ -1,18 +1,17 @@
 import sys
-
-import sys
 import json
 import time
 import datetime, pytz
 
-from FAZAPIWrapper import *
-
 from st2common.runners.base_action import Action
 
-from st2client.client import Client
-from st2client.models import KeyValuePair
+from FAZAPIWrapper import *
 
 timezone = pytz.timezone("Europe/Minsk")
+
+
+
+
 
 class RunReport(Action):
 
@@ -24,8 +23,7 @@ class RunReport(Action):
         output_format = self.config['output_format'].split(',')
 
         if not alerts:
-            client = Client(base_url='http://localhost')
-            alerts = client.keys.get_by_name(name='cached_alerts').value
+            alerts = self.action_service.get_value('cached_alerts')
 
         if login_res[0]['status']['code'] == 0:
             alerts = json.loads(alerts)

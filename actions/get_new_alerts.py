@@ -1,16 +1,15 @@
 import os   
-
 import sys
 import json
 import time
 import datetime
 
-from FAZAPIWrapper import *
-
 from st2common.runners.base_action import Action
 
-from st2client.client import Client
-from st2client.models import KeyValuePair
+from FAZAPIWrapper import *
+
+
+
 
 class GetNewAlertsAction(Action):
     def run(self, adom, alert_handler_name, event_handler_period, max_alert_age, limit, euname):
@@ -47,9 +46,7 @@ class GetNewAlertsAction(Action):
                         alert['euname'] = 'N/A'
                     if not alert['euname']:
                         alert['euname'] = 'N/A'
-                client = Client(base_url='http://localhost')
-                client.keys.update(KeyValuePair(name='cached_alerts', value=json.dumps(alerts['data'])))
-
+                self.action_service.set_value(name='cached_alerts', value=json.dumps(alerts['data']))
                 return (True, alerts)
         #
         self.logger.critical("Failed to connect to FortiManager: code=\"{}\" msg=\"{}\" url=\"{}\"".format(
