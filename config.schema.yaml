@@ -49,3 +49,8 @@
     type: "string"
     required: true
     default: ""
+  is_testing:
+    description: "Disables database interaction and returns test user information (name, phone, email)"
+    type: "boolean"
+    required: false
+    default: false
