@@ -1,4 +1,4 @@
-import sys
+import os   
 
 import sys
 import json
@@ -16,14 +16,30 @@ class GetNewAlertsAction(Action):
     def run(self, adom, alert_handler_name, event_handler_period, max_alert_age, limit, euname):
 
         apiw = FAZAPIWrapper()
+        self.logger.debug("Trying connect to FortiManager: {}:{}@{}".format(
+                                                                self.config['username'], 
+                                                                self.config['faz_ip'],
+                                                                self.config['password'][:2] + 8 * "*",
+                                                                ))
+
         login_res = apiw.login(self.config['faz_ip'], self.config['username'], self.config['password'])
 
         if login_res[0]['status']['code'] == 0:
+            self.logger.info("Successfully connected to FortiManager!")
+            
+            # query for new events
+            self.logger.debug("Trying retrieve events from adom={} event_handler_period={} max_alert_age={} limit={} euname={}".format(
+                adom, event_handler_period, max_alert_age, limit, euname))
+
             alerts = apiw.get_new_alerts(adom, alert_handler_name, event_handler_period, max_alert_age, limit, euname)
+            self.logger.info("Found {} events on FortiManager!".format(len(alerts['data'])))
+
+            # close connection to FortiManager
             apiw.logout()
+            self.logger.debug("Connection to FortiManager was closed!")
 
+            #
             alerts_dict = {}
-
             if alerts:
                 for alert in alerts['data']:
                     # fix missing euname
@@ -31,25 +47,13 @@ class GetNewAlertsAction(Action):
                         alert['euname'] = 'N/A'
                     if not alert['euname']:
                         alert['euname'] = 'N/A'
-                #
-                #     id = alert['euname']
-                #     if id not in alerts_dict:
-                #         alerts_dict[id] = []
-                #
-                #     alerts_dict[id].append(alert)
-                #
-                # cached_alerts_by_user_list = []
-                # cached_alerts_user_na_list = []
-                # for key in alerts_dict.keys():
-                #     if key == 'N/A':
-                #         cached_alerts_user_na_list.append(alerts_dict[key])
-                #     else:
-                #         cached_alerts_by_user_list.append(alerts_dict[key])
-
                 client = Client(base_url='http://localhost')
                 client.keys.update(KeyValuePair(name='cached_alerts', value=json.dumps(alerts['data'])))
-                # client.keys.update(KeyValuePair(name='cached_alerts_by_user', value=json.dumps({ 'data': cached_alerts_by_user_list })))
-                # client.keys.update(KeyValuePair(name='cached_alerts_user_na', value=json.dumps({ 'data': cached_alerts_user_na_list })))
 
                 return (True, alerts)
+        #
+        self.logger.critical("Failed to connect to FortiManager: code=\"{}\" msg=\"{}\" url=\"{}\"".format(
+                                                                login_res[0]['status']['code'],
+                                                                login_res[0]['status']['message'],
+                                                                login_res[0]['url']))
         return (False, "Log in failed, %s" % login_res)
