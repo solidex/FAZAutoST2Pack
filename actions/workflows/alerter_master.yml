@@ -14,7 +14,7 @@ vars:
 
 tasks:
   start:
-    action: core.echo message="Started"
+    action: core.echo message="Started new alerter_master instance"
     next:
       - when: <% succeeded() %>
         do: check_if_another_master_is_running
@@ -67,7 +67,7 @@ tasks:
       - do: finish
 
   finish:
-    action: "core.echo message='Completed! Stats: <% ctx().stats %>'"
+    action: "core.echo message='alerter_master instance completed with stats: <% ctx().stats %>'"
 
   already_running:
       action: "core.echo message='Exit, another alerter_master is already running'"
