@@ -1,6 +1,7 @@
 import sys
 import json
 import time
+import logging
 import datetime
 from pytimeparse.timeparse import timeparse
 
@@ -11,10 +12,11 @@ class FAZAPIWrapper:
 
     api = None
 
-    def __init__(self):
+    def __init__(self, logger=logging.getLogger()):
         self.api = FortiAnalyzerJSON()
         self.api.verbose('off')
         self.api.debug('off')
+        self.logger = logger
 
     def login(self, ip, username, password):
         return self.api.login(ip,username,password)
@@ -27,8 +29,12 @@ class FAZAPIWrapper:
     def get_new_alerts(self, adom, alert_handler_name, event_handler_period, max_alert_age, limit, euname):
         url = '/eventmgmt/adom/%s/alerts' % adom
         now = datetime.datetime.now()
-        start_time = now-datetime.timedelta(seconds=timeparse(max_alert_age))
-        end_time = now-datetime.timedelta(seconds=timeparse(event_handler_period))
+        start_time = now - datetime.timedelta(seconds=timeparse(max_alert_age))
+        end_time = now - datetime.timedelta(seconds=timeparse(event_handler_period))
+
+        #
+        self.logger.debug("Calculated timestamps for filtering: now={} start_time={} end_time={}".format(
+                                                        now, start_time, end_time))
 
         filter = "ackflag='no' and triggername='%s'" % alert_handler_name
         if euname:
@@ -38,12 +44,15 @@ class FAZAPIWrapper:
           "limit": limit,
           "offset": 0,
           "time-range": {
-            "start": start_time.strftime("%Y-%m-%dT%H:%M:%SZ"),
-            "end": end_time.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "start": start_time.strftime("%Y-%m-%dT%H:%M:%S"),  # Consider it as the FortiAnalyzer's timezone if the timezone info is not specified.
+            "end": end_time.strftime("%Y-%m-%dT%H:%M:%S"),      # Consider it as the FortiAnalyzer's timezone if the timezone info is not specified.
           },
           "filter": filter,
           "url": url
         }
+        self.logger.debug("Generated params for FortiManager querying: \n{}".format(
+                                                        json.dumps(params, indent=4, sort_keys=True),
+                                                        ))
         return self.api.get(url, data=params)
 
     def create_output_profile(self, adom, name):
