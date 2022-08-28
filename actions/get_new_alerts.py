@@ -14,7 +14,7 @@ from FAZAPIWrapper import *
 class GetNewAlertsAction(Action):
     def run(self, adom, alert_handler_name, event_handler_period, max_alert_age, limit, euname):
 
-        apiw = FAZAPIWrapper()
+        apiw = FAZAPIWrapper(logger=self.logger)
         self.logger.debug("Trying connect to FortiManager: {}:{}@{}".format(
                                                                 self.config['username'], 
                                                                 self.config['faz_ip'],
@@ -27,8 +27,8 @@ class GetNewAlertsAction(Action):
             self.logger.info("Successfully connected to FortiManager!")
             
             # query for new events
-            self.logger.debug("Trying retrieve events from adom={} event_handler_period={} max_alert_age={} limit={} euname={}".format(
-                adom, event_handler_period, max_alert_age, limit, euname))
+            self.logger.debug("Trying retrieve events from alert_handler_name={}/{} event_handler_period={} max_alert_age={} limit={} euname={}".format(
+                adom, alert_handler_name, event_handler_period, max_alert_age, limit, euname))
 
             alerts = apiw.get_new_alerts(adom, alert_handler_name, event_handler_period, max_alert_age, limit, euname)
             self.logger.info("Found {} events on FortiManager!".format(len(alerts['data'])))
@@ -36,9 +36,7 @@ class GetNewAlertsAction(Action):
             # close connection to FortiManager
             apiw.logout()
             self.logger.debug("Connection to FortiManager was closed!")
-
             #
-            alerts_dict = {}
             if alerts:
                 for alert in alerts['data']:
                     # fix missing euname
@@ -46,8 +44,20 @@ class GetNewAlertsAction(Action):
                         alert['euname'] = 'N/A'
                     if not alert['euname']:
                         alert['euname'] = 'N/A'
-                self.action_service.set_value(name='cached_alerts', value=json.dumps(alerts['data']))
-                return (True, alerts)
+
+
+                if len(alerts['data']):
+                    self.logger.debug("Print alerts to cache & return:\n{}\n<< Trimmed {} alerts >>".format(
+                                        json.dumps(alerts['data'][:1], indent=4, sort_keys=True),
+                                        len(alerts['data']) - 1,
+                                        ))
+                self.action_service.set_value(name='cached_alerts', value=json.dumps(alerts['data']), local=False)
+            else:
+                self.logger.warning("FortiManager returned an empty object for alerts: {}".format(alerts))
+
+            #
+            return (True, alerts)
+        #
         #
         self.logger.critical("Failed to connect to FortiManager: code=\"{}\" msg=\"{}\" url=\"{}\"".format(
                                                                 login_res[0]['status']['code'],
