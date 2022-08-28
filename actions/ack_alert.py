@@ -19,7 +19,7 @@ class AckAlert(Action):
         # get list of alerts to be acknowledged
         if not alerts:
             self.logger.debug("function arg alerts={}, querying st2-datastore for cached alerts".format(alerts))
-            alerts = self.action_service.get_value('cached_alerts')
+            alerts = self.action_service.get_value('cached_alerts', local=False)
         try:
             alerts = json.loads(alerts)
         except: 
